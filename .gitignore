@@ -33,6 +33,9 @@ Thumbs.db
 # Vite 构建分析报告
 stats.html
 
+# 自动生成（仅保留 src/components.d.ts）
+components.d.ts
+
 # 环境变量（本地覆盖）
 .env.local
 .env.*.local

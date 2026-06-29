@@ -35,9 +35,10 @@ export function createPersist<S extends StateTree>(
             if (parsed?.__v === version) return parsed.state as S
             if (import.meta.env.DEV) console.info(`[persist] ${storeId}: version mismatch, reset`)
           } catch {
-            // JSON parse error: fall through to throw
+            if (import.meta.env.DEV) console.info(`[persist] ${storeId}: parse error, reset`)
           }
-          throw new Error(`[persist] ${storeId}: invalid or version-mismatched data`)
+          // Return empty object: plugin's pick will filter, store uses its defaults for missing fields
+          return {} as unknown as S
         }
       }
     : undefined

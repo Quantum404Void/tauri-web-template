@@ -46,7 +46,7 @@ export function usePlatform() {
         })
         _unsubTheme = unlisten
       } catch {
-        // window API 不可用时降级
+        if (import.meta.env.DEV) console.warn('[usePlatform] theme sync failed, using fallback')
       }
     } else {
       const mq = window.matchMedia('(prefers-color-scheme: dark)')

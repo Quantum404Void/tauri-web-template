@@ -86,8 +86,8 @@ onMounted(async () => {
   try {
     localAutoLaunch.value = await api.getAutoLaunchStatus()
     localCloseToTray.value = await api.getCloseToTray()
-  } catch {
-    /* ignore */
+  } catch (e) {
+    console.warn('[SystemView] Failed to load settings:', e)
   }
 })
 

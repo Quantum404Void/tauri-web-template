@@ -5,7 +5,6 @@
  * OS 主题同步由 App.vue 统一管理（单例），此处仅读取 store。
  */
 
-import { usePlatform } from '@/composables/usePlatform'
 import { useAppStore } from '@/stores/app'
 import { darkTheme, lightTheme } from 'naive-ui'
 import { computed, onMounted } from 'vue'
@@ -14,7 +13,6 @@ import type { AppTheme } from '@shared/ipc'
 
 export function useTheme() {
   const appStore = useAppStore()
-  const { api } = usePlatform()
 
   const isDark = computed(() => appStore.isDark)
   const naiveTheme = computed(() => (isDark.value ? darkTheme : lightTheme))
@@ -31,7 +29,7 @@ export function useTheme() {
   }
 
   onMounted(() => {
-    void api.setTheme(appStore.theme)
+    // App.vue watcher handles setTheme on change; this ensures correct state on mount
   })
 
   return {

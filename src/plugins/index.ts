@@ -18,7 +18,11 @@ pinia.use(piniaPluginPersistedstate)
 
 // PWA Service Worker：仅 Web 环境注册（Tauri 无 Service Worker 支持）
 if (!isTauri()) {
-  import('./pwa').then(({ setupPWA }) => setupPWA()).catch(() => {})
+  import('./pwa')
+    .then(({ setupPWA }) => setupPWA())
+    .catch((e) => {
+      if (import.meta.env.DEV) console.warn('[PWA] setup failed:', e)
+    })
 }
 
 export function registerPlugins(app: App): void {

@@ -4,8 +4,7 @@
  * 与前端 i18n/zh.ts、en.ts 的 tray 字段对齐。
  */
 
-use parking_lot::Mutex;
-use std::sync::OnceLock;
+use std::sync::{Mutex, OnceLock};
 
 struct I18nState {
     locale: String,

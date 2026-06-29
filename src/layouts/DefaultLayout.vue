@@ -98,6 +98,7 @@
 </template>
 
 <script lang="ts" setup>
+import AppSearch from '@/components/AppSearch.vue'
 import { useKeyboard } from '@/composables/useKeyboard'
 import { usePlatform } from '@/composables/usePlatform'
 import { useResponsive } from '@/composables/useResponsive'

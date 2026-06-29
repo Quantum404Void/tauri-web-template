@@ -15,6 +15,7 @@ import type {
   SetCloseTrayResult,
   UpdateInfo
 } from '@shared/ipc'
+import type { Update as TauriUpdate } from '@tauri-apps/plugin-updater'
 
 // Tauri API 动态导入（Web 构建时不会执行）
 async function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
@@ -65,6 +66,9 @@ export function usePlatform() {
   }
 
   // ── Tauri-only API（Web 环境为 no-op） ────────────
+
+  // 缓存 check() 返回的 Update 对象，避免 downloadUpdate 重复请求
+  let _pendingUpdate: TauriUpdate | null = null
 
   const api = {
     /** 设置原生主题源 */
@@ -197,13 +201,14 @@ export function usePlatform() {
 
     // ── 更新（仅 Tauri） ──────────────────────────────
     // 使用 @tauri-apps/plugin-updater，前端主动 check + downloadAndInstall
+    // 缓存 check() 返回的 Update 对象，避免重复请求
     async checkUpdate(): Promise<void> {
       if (platform !== 'tauri') return
       try {
         const { check } = await import('@tauri-apps/plugin-updater')
-        const update = await check()
-        if (update) {
-          _updateAvailable?.({ version: update.version })
+        _pendingUpdate = await check()
+        if (_pendingUpdate) {
+          _updateAvailable?.({ version: _pendingUpdate.version })
         } else {
           _updateNotAvailable?.()
         }
@@ -215,21 +220,21 @@ export function usePlatform() {
     async downloadUpdate(onProgress?: (p: DownloadProgress) => void): Promise<void> {
       if (platform !== 'tauri') return
       try {
-        const { check } = await import('@tauri-apps/plugin-updater')
-        const update = await check()
-        if (!update) return
+        if (!_pendingUpdate) return
         let total = 0
         let transferred = 0
         let percent = 0
-        await update.downloadAndInstall((event) => {
+        await _pendingUpdate.downloadAndInstall((event) => {
           switch (event.event) {
             case 'Started':
               total = event.data.contentLength ?? 0
+              transferred = 0
               break
             case 'Progress':
               transferred += event.data.chunkLength
               percent = total > 0 ? Math.round((transferred / total) * 100) : 0
               onProgress?.({ percent, bytesPerSecond: 0, total, transferred })
+              _downloadProgress?.({ percent, bytesPerSecond: 0, total, transferred })
               break
             case 'Finished':
               percent = 100

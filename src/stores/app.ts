@@ -58,7 +58,6 @@ export const useAppStore = defineStore(
 
     function setDownloadProgress(percent: number) {
       if (updateStatus.value !== 'downloading') return
-      updateStatus.value = 'downloading'
       downloadProgress.value = Math.round(percent)
     }
 

@@ -19,8 +19,13 @@ pub fn create_tray(app: &AppHandle) -> tauri::Result<()> {
     let quit_item = MenuItem::with_id(app, "quit", i18n::t("tray.quit"), true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
 
+    let icon = app
+        .default_window_icon()
+        .cloned()
+        .unwrap_or_else(|| tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png")).expect("embedded icon"));
+
     let _tray = TrayIconBuilder::with_id("main")
-        .icon(app.default_window_icon().cloned().expect("window icon"))
+        .icon(icon)
         .tooltip(i18n::t("tray.tooltip"))
         .menu(&menu)
         .show_menu_on_left_click(false)

@@ -1,0 +1,41 @@
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+src-tauri/target/
+src-tauri/gen/
+
+# 开发证书（除 mkcert 二进制）
+certs/
+!certs/mkcert
+!certs/mkcert.exe
+
+# 日志
+*.log
+*.log.*
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Vite 构建分析报告
+stats.html
+
+# 环境变量（本地覆盖）
+.env.local
+.env.*.local
+
+# Tauri 自动生成
+src-tauri/Cargo.lock

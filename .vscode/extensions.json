@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "VoidZero.vite-plus-extension-pack",
+    "vue.volar",
+    "rust-lang.rust-analyzer",
+    "tauri-apps.tauri-vscode",
+    "lokalise.i18n-ally",
+    "antfu.iconify",
+    "usernamehw.errorlens"
+  ]
+}

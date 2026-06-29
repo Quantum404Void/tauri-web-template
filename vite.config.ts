@@ -9,6 +9,7 @@ import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
+import mkcert from 'vite-plugin-mkcert'
 import { VitePWA } from 'vite-plugin-pwa'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import { defineConfig } from 'vite-plus'
@@ -61,6 +62,8 @@ export default defineConfig({
       }
     }),
     VueDevTools(),
+    // Web dev: 启用 HTTPS 用于 PWA 测试；Tauri dev: 使用 HTTP（Tauri 注入 TAURI_ENV_PLATFORM）
+    ...(isTauri ? [] : [mkcert({ savePath: './certs' })]),
     visualizer({ filename: 'stats.html', gzipSize: true, brotliSize: true }),
     VitePWA({
       registerType: 'autoUpdate',

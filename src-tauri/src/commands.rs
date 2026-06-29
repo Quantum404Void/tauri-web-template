@@ -8,7 +8,9 @@ use std::sync::Arc;
 
 use parking_lot::Mutex;
 use serde::Serialize;
+use serde_json::json;
 use tauri::Manager;
+use tauri_plugin_store::StoreExt;
 
 use crate::i18n;
 use crate::tray;
@@ -83,14 +85,20 @@ pub fn get_close_to_tray(state: tauri::State<'_, Arc<Mutex<CloseTrayState>>>) ->
     state.lock().enabled
 }
 
-/// 设置 closeToTray 状态
+/// 设置 closeToTray 状态（同步持久化到 store）
 #[tauri::command]
 pub fn set_close_to_tray(
     enable: bool,
     state: tauri::State<'_, Arc<Mutex<CloseTrayState>>>,
+    app: tauri::AppHandle,
 ) -> SetCloseTrayResult {
     let mut guard = state.lock();
     guard.enabled = enable;
+    // 持久化到文件
+    if let Ok(store) = app.store("settings.json") {
+        store.set("closeToTray", json!(enable));
+        let _ = store.save();
+    }
     SetCloseTrayResult {
         success: true,
         close_to_tray: enable,

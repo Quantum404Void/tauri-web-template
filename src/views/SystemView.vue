@@ -82,11 +82,11 @@ const trayLoading = ref(false)
 onMounted(async () => {
   if (platform !== 'tauri') return
   try {
-    // Sync persisted store values to Rust backend on startup
-    await api.setAutoLaunch(appStore.autoLaunch)
-    await api.setCloseToTray(appStore.closeToTray)
+    // Read persisted values from Rust backend (which loaded from store file)
+    appStore.setAutoLaunch(await api.getAutoLaunchStatus())
+    appStore.setCloseToTray(await api.getCloseToTray())
   } catch (e) {
-    console.warn('[SystemView] Failed to sync settings:', e)
+    console.warn('[SystemView] Failed to load settings:', e)
   }
 })
 

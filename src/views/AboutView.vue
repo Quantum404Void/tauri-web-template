@@ -69,8 +69,12 @@ const { tauriVersion, api } = usePlatform()
 const appVersion = ref(__APP_VERSION__)
 
 onMounted(async () => {
-  const v = await api.getAppVersion()
-  if (v) appVersion.value = v
+  try {
+    const v = await api.getAppVersion()
+    if (v) appVersion.value = v
+  } catch {
+    // Web mode or app plugin unavailable: use __APP_VERSION__ from define
+  }
 })
 
 const stack = [

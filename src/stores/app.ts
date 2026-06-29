@@ -22,6 +22,8 @@ export const useAppStore = defineStore(
     const theme = ref<AppTheme>('dark')
     const lang = ref<Lang>('zh')
     const sidebarCollapsed = ref(false)
+    const closeToTray = ref(false)
+    const autoLaunch = ref(false)
     const updateStatus = ref<UpdateStatus>('idle')
     const downloadProgress = ref(0)
     const updateVersion = ref('')
@@ -47,6 +49,14 @@ export const useAppStore = defineStore(
       sidebarCollapsed.value = !sidebarCollapsed.value
     }
 
+    function setCloseToTray(enabled: boolean) {
+      closeToTray.value = enabled
+    }
+
+    function setAutoLaunch(enabled: boolean) {
+      autoLaunch.value = enabled
+    }
+
     function setActualDark(dark: boolean) {
       _systemActualDark.value = dark
     }
@@ -65,6 +75,8 @@ export const useAppStore = defineStore(
       theme,
       lang,
       sidebarCollapsed,
+      closeToTray,
+      autoLaunch,
       updateStatus,
       downloadProgress,
       updateVersion,
@@ -72,6 +84,8 @@ export const useAppStore = defineStore(
       setTheme,
       setLang,
       toggleSidebar,
+      setCloseToTray,
+      setAutoLaunch,
       setActualDark,
       setUpdateStatus,
       setDownloadProgress
@@ -80,7 +94,7 @@ export const useAppStore = defineStore(
   {
     persist: createPersist('app', {
       version: '1.0.0',
-      pick: ['theme', 'lang', 'sidebarCollapsed']
+      pick: ['theme', 'lang', 'sidebarCollapsed', 'closeToTray', 'autoLaunch']
     })
   }
 )

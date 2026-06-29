@@ -42,14 +42,14 @@
           <n-form label-placement="left" :label-width="140">
             <n-form-item :label="t('system.autoLaunch')">
               <n-switch
-                v-model:value="localAutoLaunch"
+                v-model:value="appStore.autoLaunch"
                 @update:value="applyAutoLaunch"
                 :loading="autoLaunchLoading"
               />
             </n-form-item>
             <n-form-item :label="t('system.closeToTray')">
               <n-switch
-                v-model:value="localCloseToTray"
+                v-model:value="appStore.closeToTray"
                 @update:value="applyCloseToTray"
                 :loading="trayLoading"
               />
@@ -76,18 +76,17 @@ const message = useMessage()
 const appStore = useAppStore()
 const { platform, api } = usePlatform()
 
-const localAutoLaunch = ref(false)
-const localCloseToTray = ref(true)
 const autoLaunchLoading = ref(false)
 const trayLoading = ref(false)
 
 onMounted(async () => {
   if (platform !== 'tauri') return
   try {
-    localAutoLaunch.value = await api.getAutoLaunchStatus()
-    localCloseToTray.value = await api.getCloseToTray()
+    // Sync persisted store values to Rust backend on startup
+    await api.setAutoLaunch(appStore.autoLaunch)
+    await api.setCloseToTray(appStore.closeToTray)
   } catch (e) {
-    console.warn('[SystemView] Failed to load settings:', e)
+    console.warn('[SystemView] Failed to sync settings:', e)
   }
 })
 
@@ -95,10 +94,11 @@ async function applyAutoLaunch(val: boolean) {
   autoLaunchLoading.value = true
   try {
     await api.setAutoLaunch(val)
+    appStore.setAutoLaunch(val)
     message.success(t('system.applySuccess'))
   } catch (e: unknown) {
     message.error(t('system.applyFailed', { msg: (e as Error)?.message }))
-    localAutoLaunch.value = !val
+    appStore.setAutoLaunch(!val)
   } finally {
     autoLaunchLoading.value = false
   }
@@ -108,10 +108,11 @@ async function applyCloseToTray(val: boolean) {
   trayLoading.value = true
   try {
     await api.setCloseToTray(val)
+    appStore.setCloseToTray(val)
     message.success(t('system.applySuccess'))
   } catch (e: unknown) {
     message.error(t('system.applyFailed', { msg: (e as Error)?.message }))
-    localCloseToTray.value = !val
+    appStore.setCloseToTray(!val)
   } finally {
     trayLoading.value = false
   }

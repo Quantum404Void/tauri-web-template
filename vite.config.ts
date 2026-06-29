@@ -9,7 +9,6 @@ import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
-import mkcert from 'vite-plugin-mkcert'
 import { VitePWA } from 'vite-plugin-pwa'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import { defineConfig } from 'vite-plus'
@@ -62,7 +61,6 @@ export default defineConfig({
       }
     }),
     VueDevTools(),
-    mkcert({ savePath: './certs' }),
     visualizer({ filename: 'stats.html', gzipSize: true, brotliSize: true }),
     VitePWA({
       registerType: 'autoUpdate',

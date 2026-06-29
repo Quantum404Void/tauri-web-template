@@ -5,7 +5,7 @@
   "identifier": "com.tauri.vue.template",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "https://127.0.0.1:26888",
+    "devUrl": "http://127.0.0.1:26888",
     "beforeDevCommand": "bun run dev:web",
     "beforeBuildCommand": "bun run build:web"
   },

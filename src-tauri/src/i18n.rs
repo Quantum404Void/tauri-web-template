@@ -19,12 +19,12 @@ fn state() -> &'static Mutex<I18nState> {
 /// 设置当前 locale（"zh" | "en"）
 pub fn set_locale(locale: &str) {
     let normalized = normalize(locale);
-    state().lock().locale = normalized.to_string();
+    state().lock().unwrap().locale = normalized.to_string();
 }
 
 /// 翻译 key（仅支持 tray.* 路径）
 pub fn t(key: &str) -> String {
-    let locale = state().lock().locale.clone();
+    let locale = state().lock().unwrap().locale.clone();
     let messages = messages_for(&locale);
     messages.get(key).cloned().unwrap_or_else(|| key.to_string())
 }

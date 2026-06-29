@@ -13,6 +13,7 @@ mod tray;
 use std::sync::Mutex;
 
 use tauri::{Manager, WindowEvent};
+use tauri_plugin_store::StoreExt;
 
 use crate::commands::CloseTrayState;
 

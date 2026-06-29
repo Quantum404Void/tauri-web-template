@@ -46,6 +46,7 @@ export default defineConfig({
     vue(),
     AutoImport({ imports: ['vue'] }),
     Components({
+      dts: 'components.d.ts',
       resolvers: [
         NaiveUiResolver(),
         IconsResolver({

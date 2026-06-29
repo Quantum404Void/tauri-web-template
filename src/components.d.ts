@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppSearch: typeof import('./components/AppSearch.vue')['default']
     IconMdiBrightnessAuto: typeof import('~icons/mdi/brightness-auto')['default']
     IconMdiCheckCircleOutline: typeof import('~icons/mdi/check-circle-outline')['default']
     IconMdiCodeJson: typeof import('~icons/mdi/code-json')['default']

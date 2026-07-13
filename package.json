@@ -24,6 +24,8 @@
     "build:analyze": "VITE_ANALYZE=true vite build"
   },
   "dependencies": {
+    "@open-file-viewer/core": "^0.1.18",
+    "@open-file-viewer/vue": "^0.1.18",
     "@tauri-apps/api": "^2.4.0",
     "@tauri-apps/plugin-autostart": "^2.4.0",
     "@tauri-apps/plugin-dialog": "^2.3.0",
@@ -37,6 +39,7 @@
     "@vueuse/core": "^14.3.0",
     "jszip": "^3.10.1",
     "naive-ui": "^2.44.1",
+    "pdfjs-dist": "^6.1.200",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
     "vue": "^3.5.34",

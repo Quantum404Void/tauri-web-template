@@ -7,15 +7,25 @@
           <n-tab-pane name="preview" :tab="t('file.previewTab')" />
         </n-tabs>
 
-        <n-form-item :label="t('file.content')">
+        <n-form-item v-if="activeTab === 'edit'" :label="t('file.content')">
           <n-input
             v-model:value="content"
             type="textarea"
-            :rows="activeTab === 'preview' ? 10 : 6"
+            :rows="6"
             :placeholder="t('file.placeholder')"
-            :readonly="activeTab === 'preview'"
           />
         </n-form-item>
+        <OpenFileViewer
+          v-else
+          :file="previewFile"
+          :file-name="previewFile.name"
+          width="100%"
+          height="420px"
+          fit="contain"
+          toolbar
+          theme="auto"
+          :plugins="viewerPlugins"
+        />
 
         <n-space wrap>
           <n-button type="primary" :loading="loading" @click="doSaveText">
@@ -65,8 +75,19 @@
 
 <script lang="ts" setup>
 import { usePlatform } from '@/composables/usePlatform'
-import { FILE_TYPES, openFile, readText, saveFile, saveZip } from '@/utils/file'
-import { ref } from 'vue'
+import { FILE_TYPES, openFile, saveFile, saveZip } from '@/utils/file'
+import {
+  archivePlugin,
+  fallbackPlugin,
+  imagePlugin,
+  officePlugin,
+  pdfPlugin,
+  textPlugin
+} from '@open-file-viewer/core'
+import '@open-file-viewer/core/style.css'
+import { OpenFileViewer } from '@open-file-viewer/vue'
+import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.mjs?url'
+import { computed, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -77,6 +98,18 @@ const result = ref('')
 const resultType = ref<'default' | 'success' | 'error'>('default')
 const loading = ref(false)
 const activeTab = ref('edit')
+const openedFile = shallowRef<File>()
+const previewFile = computed(
+  () => openedFile.value ?? new File([content.value], 'preview.txt', { type: 'text/plain' })
+)
+const viewerPlugins = [
+  imagePlugin(),
+  pdfPlugin({ workerSrc: pdfWorkerSrc }),
+  officePlugin(),
+  archivePlugin(),
+  textPlugin(),
+  fallbackPlugin()
+]
 
 function setResult(text: string, type: typeof resultType.value = 'default') {
   result.value = text
@@ -147,8 +180,8 @@ function doOpenFile() {
       const filePath = res.filePaths[0]
       const fileName = filePath.split(/[\\/]/).pop() ?? filePath
       const bytes = await api.readFileBytes(filePath)
-      const text = new TextDecoder().decode(bytes)
-      content.value = text
+      openedFile.value = new File([Uint8Array.from(bytes).buffer], fileName)
+      activeTab.value = 'preview'
       setResult(t('file.opened', { name: fileName, size: bytes.length }), 'success')
       return
     }
@@ -160,7 +193,8 @@ function doOpenFile() {
       return
     }
     const file = Array.isArray(picked) ? picked[0] : picked
-    content.value = await readText(file)
+    openedFile.value = file
+    activeTab.value = 'preview'
     setResult(t('file.opened', { name: file.name, size: file.size }), 'success')
   })
 }

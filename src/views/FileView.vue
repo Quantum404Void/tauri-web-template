@@ -17,14 +17,15 @@
         </n-form-item>
         <OpenFileViewer
           v-else
-          class="file-viewer"
+          class-name="file-viewer"
           :file="previewFile"
           :file-name="previewFile.name"
           width="100%"
           height="420px"
           fit="contain"
-          toolbar
+          :toolbar="viewerToolbar"
           :theme="viewerTheme"
+          :locale="appStore.lang === 'zh' ? 'zh-CN' : 'en-US'"
           :plugins="viewerPlugins"
         />
 
@@ -88,6 +89,7 @@ import {
 } from '@open-file-viewer/core'
 import '@open-file-viewer/core/style.css'
 import { OpenFileViewer } from '@open-file-viewer/vue'
+// oxlint-disable-next-line import/default -- Vite provides the default URL export for ?url imports.
 import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.mjs?url'
 import { computed, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -106,6 +108,39 @@ const previewFile = computed(
   () => openedFile.value ?? new File([content.value], 'preview.txt', { type: 'text/plain' })
 )
 const viewerTheme = computed(() => (appStore.isDark ? 'dark' : 'light'))
+const viewerToolbar = computed(() => {
+  const zh = appStore.lang === 'zh'
+  return {
+    zoom: true,
+    rotate: true,
+    download: true,
+    fullscreen: true,
+    print: true,
+    search: true,
+    order: [
+      'zoom-out',
+      'zoom-in',
+      'zoom-reset',
+      'rotate-right',
+      'search',
+      'download',
+      'print',
+      'fullscreen'
+    ],
+    labels: zh
+      ? {
+          'zoom-out': '缩小',
+          'zoom-in': '放大',
+          'zoom-reset': '原始大小',
+          'rotate-right': '旋转',
+          search: '搜索',
+          download: '下载',
+          print: '打印',
+          fullscreen: '全屏'
+        }
+      : undefined
+  }
+})
 const viewerPlugins = [
   imagePlugin(),
   pdfPlugin({ workerSrc: pdfWorkerSrc }),
@@ -210,7 +245,7 @@ function doOpenFile() {
   margin: 0 auto;
 }
 
-.file-viewer {
+:deep(.file-viewer) {
   --ofv-bg: var(--n-color);
   --ofv-surface: var(--n-color-modal);
   --ofv-surface-muted: var(--n-color-embedded);
@@ -224,5 +259,39 @@ function doOpenFile() {
 
   overflow: hidden;
   border-radius: var(--n-border-radius);
+}
+
+:deep(.file-viewer .ofv-toolbar) {
+  gap: 8px;
+  padding: 10px;
+}
+
+:deep(.file-viewer .ofv-toolbar button) {
+  min-width: 36px;
+  min-height: 36px;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+:deep(.file-viewer .ofv-toolbar button:active:not(:disabled)) {
+  background: color-mix(in srgb, var(--n-color-target) 24%, transparent);
+}
+
+:deep(.file-viewer .ofv-toolbar button:focus-visible),
+:deep(.file-viewer .ofv-toolbar input:focus-visible) {
+  outline-color: var(--n-color-target);
+}
+
+@media (max-width: 640px) {
+  :deep(.file-viewer .ofv-toolbar-label) {
+    display: none;
+  }
+
+  :deep(.file-viewer .ofv-toolbar-search) {
+    order: 10;
+    flex-basis: 100%;
+  }
 }
 </style>

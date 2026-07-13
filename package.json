@@ -12,9 +12,7 @@
     "lint:fix": "vp lint --fix",
     "check": "vp check",
     "check:fix": "vp check --fix",
-    "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
-    "typecheck:web": "vue-tsc --noEmit -p tsconfig.web.json --composite false",
-    "typecheck": "vp run typecheck:node && vp run typecheck:web",
+    "typecheck": "vp check --no-fmt --no-lint",
     "dev": "tauri dev",
     "dev:web": "vite",
     "build": "vp run typecheck && tauri build",
@@ -53,7 +51,7 @@
     "@vitejs/plugin-vue": "^6.0.7",
     "rollup-plugin-visualizer": "^7.0.1",
     "sass-embedded": "^1.100.0",
-    "typescript": "5.9.3",
+    "typescript": "^7.0.2",
     "unplugin-auto-import": "^21.0.0",
     "unplugin-icons": "^23.0.1",
     "unplugin-vue-components": "^32.1.0",
@@ -61,8 +59,7 @@
     "vite-plugin-mkcert": "^2.1.0",
     "vite-plugin-pwa": "^1.3.0",
     "vite-plugin-vue-devtools": "^8.1.5",
-    "vite-plus": "^0.2.4",
-    "vue-tsc": "^3.3.7"
+    "vite-plus": "^0.2.4"
   },
   "packageManager": "bun@1.3.11",
   "trustedDependencies": [

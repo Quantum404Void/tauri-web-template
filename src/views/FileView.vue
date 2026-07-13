@@ -17,13 +17,14 @@
         </n-form-item>
         <OpenFileViewer
           v-else
+          class="file-viewer"
           :file="previewFile"
           :file-name="previewFile.name"
           width="100%"
           height="420px"
           fit="contain"
           toolbar
-          theme="auto"
+          :theme="viewerTheme"
           :plugins="viewerPlugins"
         />
 
@@ -75,6 +76,7 @@
 
 <script lang="ts" setup>
 import { usePlatform } from '@/composables/usePlatform'
+import { useAppStore } from '@/stores/app'
 import { FILE_TYPES, openFile, saveFile, saveZip } from '@/utils/file'
 import {
   archivePlugin,
@@ -92,6 +94,7 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const { platform, api } = usePlatform()
+const appStore = useAppStore()
 
 const content = ref('Hello, Tauri + Vue3!\n这是一个模板文件。')
 const result = ref('')
@@ -102,6 +105,7 @@ const openedFile = shallowRef<File>()
 const previewFile = computed(
   () => openedFile.value ?? new File([content.value], 'preview.txt', { type: 'text/plain' })
 )
+const viewerTheme = computed(() => (appStore.isDark ? 'dark' : 'light'))
 const viewerPlugins = [
   imagePlugin(),
   pdfPlugin({ workerSrc: pdfWorkerSrc }),
@@ -204,5 +208,21 @@ function doOpenFile() {
 .page {
   max-width: 700px;
   margin: 0 auto;
+}
+
+.file-viewer {
+  --ofv-bg: var(--n-color);
+  --ofv-surface: var(--n-color-modal);
+  --ofv-surface-muted: var(--n-color-embedded);
+  --ofv-border: var(--n-border-color);
+  --ofv-text: var(--n-text-color);
+  --ofv-text-muted: var(--n-text-color-3);
+  --ofv-accent: var(--n-color-target);
+  --ofv-button-hover: var(--n-color-hover);
+  --ofv-highlight: color-mix(in srgb, var(--n-color-target) 18%, transparent);
+  --ofv-shadow: var(--n-box-shadow-1);
+
+  overflow: hidden;
+  border-radius: var(--n-border-radius);
 }
 </style>

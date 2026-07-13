@@ -2,12 +2,23 @@
   <div class="page">
     <n-card :title="t('file.title')">
       <n-space vertical size="large">
-        <n-button type="primary" :loading="loading" @click="doOpenFile">
-          <template #icon
-            ><n-icon><icon-mdi-folder-open-outline /></n-icon
-          ></template>
-          {{ t('file.openFile') }}
-        </n-button>
+        <n-space wrap>
+          <n-button type="primary" :loading="loading" @click="doOpenFile">
+            <template #icon
+              ><n-icon><icon-mdi-folder-open-outline /></n-icon
+            ></template>
+            {{ t('file.openFile') }}
+          </n-button>
+          <n-button
+            v-for="template in fileTemplates"
+            :key="template.name"
+            secondary
+            :disabled="loading"
+            @click="openTemplate(template)"
+          >
+            {{ template.label }}
+          </n-button>
+        </n-space>
 
         <OpenFileViewer
           v-if="openedFile"
@@ -47,17 +58,48 @@ import '@open-file-viewer/core/style.css'
 import { OpenFileViewer } from '@open-file-viewer/vue'
 // oxlint-disable-next-line import/default -- Vite provides the default URL export for ?url imports.
 import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.mjs?url'
-import { computed, ref, shallowRef } from 'vue'
+import { computed, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const { platform, api } = usePlatform()
 const appStore = useAppStore()
 
-const result = ref('')
-const resultType = ref<'default' | 'success' | 'error'>('default')
-const loading = ref(false)
+interface FileTemplate {
+  label: string
+  name: string
+  type: string
+  content: string
+}
+
+const result = shallowRef('')
+const resultType = shallowRef<'default' | 'success' | 'error'>('default')
+const loading = shallowRef(false)
 const openedFile = shallowRef<File>()
+const fileTemplates = computed<FileTemplate[]>(() => [
+  {
+    label: t('file.templates.markdown'),
+    name: 'example.md',
+    type: 'text/markdown',
+    content: `# Open File Viewer\n\n- Preview files with plugins\n- Search, zoom, print and save\n- Keep the original file extension\n`
+  },
+  {
+    label: t('file.templates.json'),
+    name: 'example.json',
+    type: 'application/json',
+    content: JSON.stringify(
+      { name: 'Open File Viewer', enabled: true, formats: ['pdf', 'docx', 'xlsx'] },
+      null,
+      2
+    )
+  },
+  {
+    label: t('file.templates.csv'),
+    name: 'example.csv',
+    type: 'text/csv',
+    content: 'name,type,supported\nreport.pdf,pdf,true\ndata.xlsx,spreadsheet,true\n'
+  }
+])
 const viewerTheme = computed(() => (appStore.isDark ? 'dark' : 'light'))
 const viewerToolbar = computed(() => {
   const zh = appStore.lang === 'zh'
@@ -139,13 +181,56 @@ function downloadOpenedFile() {
   })
 }
 
+function openTemplate(template: FileTemplate) {
+  const file = new File([template.content], template.name, { type: template.type })
+  openedFile.value = file
+  setResult(t('file.opened', { name: file.name, size: file.size }), 'success')
+}
+
 function doOpenFile() {
   wrap(async () => {
     // Tauri 环境用原生对话框 + fs 插件读文件
     if (platform === 'tauri') {
       const res = await api.openFileDialog({
         filters: [
-          { name: 'Text / JSON', extensions: ['txt', 'json', 'md', 'csv', 'log'] },
+          {
+            name: 'Previewable files',
+            extensions: [
+              'pdf',
+              'doc',
+              'docx',
+              'xls',
+              'xlsx',
+              'ppt',
+              'pptx',
+              'odt',
+              'ods',
+              'odp',
+              'txt',
+              'md',
+              'json',
+              'csv',
+              'tsv',
+              'xml',
+              'yaml',
+              'yml',
+              'log',
+              'png',
+              'jpg',
+              'jpeg',
+              'gif',
+              'webp',
+              'svg',
+              'bmp',
+              'tif',
+              'tiff',
+              'zip',
+              'rar',
+              '7z',
+              'tar',
+              'gz'
+            ]
+          },
           { name: 'All Files', extensions: ['*'] }
         ]
       })
@@ -217,6 +302,11 @@ function doOpenFile() {
 :deep(.file-viewer .ofv-toolbar button:focus-visible),
 :deep(.file-viewer .ofv-toolbar input:focus-visible) {
   outline-color: var(--n-color-target);
+}
+
+/* Text preview already saves through the native viewer toolbar. */
+:deep(.file-viewer .ofv-code-actions .ofv-code-action:nth-of-type(3)) {
+  display: none;
 }
 
 @media (max-width: 640px) {

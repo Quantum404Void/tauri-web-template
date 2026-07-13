@@ -23,6 +23,7 @@ export default {
   file: {
     title: 'File Tools',
     openFile: 'Open File',
+    templates: { markdown: 'Markdown Template', json: 'JSON Template', csv: 'CSV Template' },
     empty: 'Open a file to preview, search, zoom, print, and download it here',
     saved: 'File saved successfully',
     opened: 'Opened: {name} ({size} bytes)',

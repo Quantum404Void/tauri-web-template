@@ -23,6 +23,7 @@ export default {
   file: {
     title: '文件工具',
     openFile: '打开文件',
+    templates: { markdown: 'Markdown 模板', json: 'JSON 模板', csv: 'CSV 模板' },
     empty: '打开文件后可在此预览、搜索、缩放、打印和下载',
     saved: '文件保存成功',
     opened: '已打开：{name}（{size} 字节）',

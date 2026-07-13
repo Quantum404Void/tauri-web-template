@@ -2,24 +2,18 @@
   <div class="page">
     <n-card :title="t('file.title')">
       <n-space vertical size="large">
-        <n-tabs v-model:value="activeTab" type="segment" animated>
-          <n-tab-pane name="edit" :tab="t('file.editTab')" />
-          <n-tab-pane name="preview" :tab="t('file.previewTab')" />
-        </n-tabs>
+        <n-button type="primary" :loading="loading" @click="doOpenFile">
+          <template #icon
+            ><n-icon><icon-mdi-folder-open-outline /></n-icon
+          ></template>
+          {{ t('file.openFile') }}
+        </n-button>
 
-        <n-form-item v-if="activeTab === 'edit'" :label="t('file.content')">
-          <n-input
-            v-model:value="content"
-            type="textarea"
-            :rows="6"
-            :placeholder="t('file.placeholder')"
-          />
-        </n-form-item>
         <OpenFileViewer
-          v-else
+          v-if="openedFile"
           class-name="file-viewer"
-          :file="previewFile"
-          :file-name="previewFile.name"
+          :file="openedFile"
+          :file-name="openedFile.name"
           width="100%"
           height="420px"
           fit="contain"
@@ -28,48 +22,10 @@
           :locale="appStore.lang === 'zh' ? 'zh-CN' : 'en-US'"
           :plugins="viewerPlugins"
         />
-
-        <n-space wrap>
-          <n-button type="primary" :loading="loading" @click="doSaveText">
-            <template #icon
-              ><n-icon><icon-mdi-file-document-outline /></n-icon
-            ></template>
-            {{ t('file.saveText') }}
-          </n-button>
-          <n-button :loading="loading" @click="doSaveJson">
-            <template #icon
-              ><n-icon><icon-mdi-code-json /></n-icon
-            ></template>
-            {{ t('file.saveJson') }}
-          </n-button>
-          <n-button :loading="loading" @click="doSaveZip">
-            <template #icon
-              ><n-icon><icon-mdi-zip-box-outline /></n-icon
-            ></template>
-            {{ t('file.saveZip') }}
-          </n-button>
-          <n-button secondary :loading="loading" @click="doOpenFile">
-            <template #icon
-              ><n-icon><icon-mdi-folder-open-outline /></n-icon
-            ></template>
-            {{ t('file.openFile') }}
-          </n-button>
-        </n-space>
-
-        <n-card size="small" embedded>
-          <template #header>
-            <n-space align="center">
-              <n-icon><icon-mdi-text-box-outline /></n-icon>
-              {{ t('file.result') }}
-            </n-space>
-          </template>
-          <n-text
-            :type="resultType"
-            style="font-family: monospace; white-space: pre-wrap; font-size: 13px"
-          >
-            {{ result || t('file.noResult') }}
-          </n-text>
-        </n-card>
+        <n-empty v-else :description="t('file.empty')" />
+        <n-alert v-if="result" :type="resultType === 'default' ? 'info' : resultType">
+          {{ result }}
+        </n-alert>
       </n-space>
     </n-card>
   </div>
@@ -78,7 +34,7 @@
 <script lang="ts" setup>
 import { usePlatform } from '@/composables/usePlatform'
 import { useAppStore } from '@/stores/app'
-import { FILE_TYPES, openFile, saveFile, saveZip } from '@/utils/file'
+import { openFile, saveFile } from '@/utils/file'
 import {
   archivePlugin,
   fallbackPlugin,
@@ -98,22 +54,17 @@ const { t } = useI18n()
 const { platform, api } = usePlatform()
 const appStore = useAppStore()
 
-const content = ref('Hello, Tauri + Vue3!\n这是一个模板文件。')
 const result = ref('')
 const resultType = ref<'default' | 'success' | 'error'>('default')
 const loading = ref(false)
-const activeTab = ref('edit')
 const openedFile = shallowRef<File>()
-const previewFile = computed(
-  () => openedFile.value ?? new File([content.value], 'preview.txt', { type: 'text/plain' })
-)
 const viewerTheme = computed(() => (appStore.isDark ? 'dark' : 'light'))
 const viewerToolbar = computed(() => {
   const zh = appStore.lang === 'zh'
   return {
     zoom: true,
     rotate: true,
-    download: true,
+    download: false,
     fullscreen: true,
     print: true,
     search: true,
@@ -123,7 +74,7 @@ const viewerToolbar = computed(() => {
       'zoom-reset',
       'rotate-right',
       'search',
-      'download',
+      'save-file',
       'print',
       'fullscreen'
     ],
@@ -134,11 +85,20 @@ const viewerToolbar = computed(() => {
           'zoom-reset': '原始大小',
           'rotate-right': '旋转',
           search: '搜索',
-          download: '下载',
+          'save-file': '下载',
           print: '打印',
           fullscreen: '全屏'
         }
-      : undefined
+      : { 'save-file': 'Download' },
+    actions: [
+      {
+        id: 'save-file',
+        label: zh ? '下载' : 'Download',
+        title: zh ? '保存当前文件' : 'Save current file',
+        disabled: () => loading.value,
+        onClick: () => void downloadOpenedFile()
+      }
+    ]
   }
 })
 const viewerPlugins = [
@@ -170,34 +130,11 @@ async function wrap(fn: () => Promise<void>) {
   }
 }
 
-function doSaveText() {
+function downloadOpenedFile() {
   wrap(async () => {
-    await saveFile(content.value, { fileName: 'output.txt', fileType: FILE_TYPES.TEXT }, api)
-    setResult(t('file.saved'), 'success')
-  })
-}
-
-function doSaveJson() {
-  wrap(async () => {
-    await saveFile(
-      JSON.stringify({ content: content.value, timestamp: Date.now() }, null, 2),
-      { fileName: 'output.json', fileType: FILE_TYPES.JSON },
-      api
-    )
-    setResult(t('file.saved'), 'success')
-  })
-}
-
-function doSaveZip() {
-  wrap(async () => {
-    await saveZip(
-      [
-        { name: 'readme.txt', data: content.value },
-        { name: 'data.json', data: JSON.stringify({ content: content.value }) }
-      ],
-      'archive.zip',
-      api
-    )
+    const file = openedFile.value
+    if (!file) return
+    await saveFile(file, { fileName: file.name }, api)
     setResult(t('file.saved'), 'success')
   })
 }
@@ -220,7 +157,6 @@ function doOpenFile() {
       const fileName = filePath.split(/[\\/]/).pop() ?? filePath
       const bytes = await api.readFileBytes(filePath)
       openedFile.value = new File([Uint8Array.from(bytes).buffer], fileName)
-      activeTab.value = 'preview'
       setResult(t('file.opened', { name: fileName, size: bytes.length }), 'success')
       return
     }
@@ -233,7 +169,6 @@ function doOpenFile() {
     }
     const file = Array.isArray(picked) ? picked[0] : picked
     openedFile.value = file
-    activeTab.value = 'preview'
     setResult(t('file.opened', { name: file.name, size: file.size }), 'success')
   })
 }

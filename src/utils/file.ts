@@ -4,8 +4,6 @@
  * 接受平台 API 对象作为参数，避免直接依赖 Tauri API。
  */
 
-import JSZip from 'jszip'
-
 // ── 类型 ──────────────────────────────────────────────────
 
 export interface FileType {
@@ -17,11 +15,6 @@ export interface FileType {
 export interface SaveOptions {
   fileName?: string
   fileType?: FileType
-}
-
-export interface ZipEntry {
-  name: string
-  data: string | ArrayBuffer | Blob
 }
 
 /** 平台文件 API 最小接口（与 usePlatform.api 对齐） */
@@ -101,7 +94,8 @@ export async function saveFile(
     const result = await api.showSaveDialog({ defaultPath: fileName, filters })
     if (result.canceled || !result.filePath)
       throw Object.assign(new Error('canceled'), { name: 'AbortError' })
-    await api.saveFile?.(result.filePath, new Uint8Array(await blob.arrayBuffer()))
+    if (!api.saveFile) throw new Error('Platform save API is unavailable')
+    await api.saveFile(result.filePath, new Uint8Array(await blob.arrayBuffer()))
     return
   }
 
@@ -168,22 +162,4 @@ export function openFile(
 /** 读取 File 为 UTF-8 文本 */
 export async function readText(file: File): Promise<string> {
   return new TextDecoder().decode(await file.arrayBuffer())
-}
-
-// ── ZIP ───────────────────────────────────────────────────
-
-/** 将多个文件打包为 ZIP 并触发保存 */
-export async function saveZip(
-  entries: ZipEntry[],
-  fileName = 'archive.zip',
-  api?: PlatformFileApi
-): Promise<void> {
-  const zip = new JSZip()
-  for (const entry of entries) zip.file(entry.name, entry.data)
-  const blob = await zip.generateAsync({
-    type: 'blob',
-    compression: 'DEFLATE',
-    compressionOptions: { level: 6 }
-  })
-  await saveFile(blob, { fileName, fileType: FILE_TYPES.ZIP }, api)
 }

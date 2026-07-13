@@ -18,7 +18,6 @@
         "@tauri-apps/plugin-updater": "^2.10.1",
         "@tauri-apps/plugin-window-state": "^2.4.1",
         "@vueuse/core": "^14.3.0",
-        "jszip": "^3.10.1",
         "naive-ui": "^2.44.1",
         "pdfjs-dist": "^6.1.200",
         "pinia": "^3.0.4",

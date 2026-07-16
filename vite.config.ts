@@ -65,7 +65,9 @@ export default defineConfig({
     VueDevTools(),
     // Web dev: 启用 HTTPS 用于 PWA 测试；Tauri dev: 使用 HTTP（Tauri 注入 TAURI_ENV_PLATFORM）
     ...(isTauri ? [] : [mkcert({ savePath: './certs' })]),
-    visualizer({ filename: 'stats.html', gzipSize: true, brotliSize: true }),
+    ...(process.env.VITE_ANALYZE === 'true'
+      ? [visualizer({ filename: 'stats.html', gzipSize: true, brotliSize: true })]
+      : []),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: [
@@ -138,7 +140,7 @@ export default defineConfig({
     port: TAURI_DEV_PORT,
     strictPort: isTauri,
     open: false,
-    hmr: tauriDevHost ? { protocol: 'ws', host: tauriDevHost, port: 1421 } : undefined,
+    ws: tauriDevHost ? { protocol: 'ws', host: tauriDevHost, port: 1421 } : undefined,
     watch: {
       // 忽略 Rust 代码变更，避免 Vite 触发不必要的 HMR/重启
       ignored: ['**/src-tauri/**']
@@ -162,7 +164,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     reportCompressedSize: false,
     cssCodeSplit: true,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         manualChunks(id): string | undefined {
           if (id.includes('naive-ui')) return 'naive-ui'

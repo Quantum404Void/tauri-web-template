@@ -44,12 +44,5 @@
     "category": "DeveloperTool",
     "shortDescription": "Tauri + Vue3 template",
     "longDescription": "A production-ready Tauri 2 + Vue3 desktop application template."
-  },
-  "plugins": {
-    "updater": {
-      "active": false,
-      "endpoints": [],
-      "pubkey": ""
-    }
   }
 }
